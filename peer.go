@@ -18,7 +18,7 @@ type Peer struct {
 
 func NewClient(hub *Hub, conn *websocket.Conn) *Peer {
 	return &Peer{
-		Name:           "unknown",
+		Name:           "",
 		Type:           "client",
 		Hub:            hub,
 		Conn:           conn,
