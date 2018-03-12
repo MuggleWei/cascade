@@ -2,7 +2,6 @@ package cascade
 
 import (
 	"log"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -66,14 +65,13 @@ func (this *Peer) ReadPump(maxReadSize int64) {
 }
 
 // peer write
-func (this *Peer) WritePump(writeWait time.Duration) {
+func (this *Peer) WritePump() {
 	defer func() {
 		this.Conn.Close()
 	}()
 	for {
 		select {
 		case message, ok := <-this.SendChannel:
-			this.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
 				this.Conn.WriteMessage(websocket.CloseMessage, []byte{})

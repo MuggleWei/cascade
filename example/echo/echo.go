@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/MuggleWei/cascade"
 	"github.com/gorilla/websocket"
@@ -55,6 +54,6 @@ func serveWs(hub *cascade.Hub, w http.ResponseWriter, r *http.Request) {
 	}
 	client.Hub.ClientRegister <- client
 
-	go client.WritePump(time.Second * 5)
+	go client.WritePump()
 	go client.ReadPump(1024)
 }

@@ -25,7 +25,7 @@ func connectTimerServ(hub *cascade.Hub, addr string) {
 
 		hub.ServerRegister <- server
 
-		go server.WritePump(time.Second * 5)
+		go server.WritePump()
 		server.ReadPump(1024)
 	}
 }
