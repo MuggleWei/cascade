@@ -62,8 +62,9 @@ func setHubCallback(hub *cascade.Hub) {
 			select {
 			case client.SendChannel <- message.Message:
 			default:
-				close(client.SendChannel)
-				delete(hub.Clients, client)
+				log.Printf("[Warning] SendChannel full\n")
+				// close(client.SendChannel)
+				// delete(hub.Clients, client)
 			}
 		}
 	}

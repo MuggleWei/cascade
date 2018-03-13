@@ -21,7 +21,7 @@ func NewClient(hub *Hub, conn *websocket.Conn) *Peer {
 		Type:           "client",
 		Hub:            hub,
 		Conn:           conn,
-		SendChannel:    make(chan []byte),
+		SendChannel:    make(chan []byte, 100),
 		CallbackOnRead: nil,
 	}
 }
@@ -32,7 +32,7 @@ func NewServer(hub *Hub, conn *websocket.Conn, name string) *Peer {
 		Type:           "server",
 		Hub:            hub,
 		Conn:           conn,
-		SendChannel:    make(chan []byte),
+		SendChannel:    make(chan []byte, 100),
 		CallbackOnRead: nil,
 	}
 }

@@ -33,7 +33,7 @@ func NewHub() *Hub {
 		Servers:                  make(map[string]*Peer),
 		ServerRegister:           make(chan *Peer),
 		ServerUnregister:         make(chan *Peer),
-		MessageChannel:           make(chan *HubMessage),
+		MessageChannel:           make(chan *HubMessage, 100),
 		CallbackOnClientActive:   nil,
 		CallbackOnClientInactive: nil,
 		CallbackOnServerActive:   nil,
