@@ -10,6 +10,7 @@ import (
 
 func main() {
 	addr := "ws://127.0.0.1:10102/ws"
+	// addr := "ws://127.0.0.1:10000/timer"
 	for {
 		c, _, err := websocket.DefaultDialer.Dial(addr, nil)
 		if err != nil {

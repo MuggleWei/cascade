@@ -24,7 +24,9 @@ func main() {
 	setHubCallback(hub)
 	go hub.Run()
 
-	go connectTimerServ(hub, "ws://127.0.0.1:10000/timer")
+	timerHub := cascade.NewHub()
+	setTimerServHubCallback(timerHub, hub)
+	go connectTimerServ(timerHub, "ws://127.0.0.1:10000/timer")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -49,16 +51,22 @@ func serveWs(hub *cascade.Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := cascade.NewClient(hub, conn)
-	client.Hub.ClientRegister <- client
+	client := cascade.NewPeer(hub, conn)
+	client.Hub.PeerRegister <- client
 
 	go client.WritePump()
 	go client.ReadPump(1024)
 }
 
 func setHubCallback(hub *cascade.Hub) {
+	hub.CallbackOnActive = func(client *cascade.Peer) {
+		log.Printf("client active: %v\n", client.Conn.RemoteAddr())
+	}
+	hub.CallbackOnInactive = func(client *cascade.Peer) {
+		log.Printf("client inactive: %v\n", client.Conn.RemoteAddr())
+	}
 	hub.CallbackOnMsg = func(message *cascade.HubMessage) {
-		for client := range hub.Clients {
+		for client := range hub.Peers {
 			select {
 			case client.SendChannel <- message.Message:
 			default:
@@ -67,5 +75,17 @@ func setHubCallback(hub *cascade.Hub) {
 				//		delete(hub.Clients, client)
 			}
 		}
+	}
+}
+
+func setTimerServHubCallback(timerHub, hub *cascade.Hub) {
+	timerHub.CallbackOnActive = func(timerServ *cascade.Peer) {
+		log.Printf("connected to timer server: %v\n", timerServ.Conn.RemoteAddr())
+	}
+	timerHub.CallbackOnInactive = func(timerServ *cascade.Peer) {
+		log.Printf("disconnected to timer server: %v\n", timerServ.Conn.RemoteAddr())
+	}
+	timerHub.CallbackOnMsg = func(message *cascade.HubMessage) {
+		hub.MessageChannel <- message
 	}
 }

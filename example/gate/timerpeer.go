@@ -9,6 +9,7 @@ import (
 )
 
 func connectTimerServ(hub *cascade.Hub, addr string) {
+	go hub.Run()
 	for {
 		c, _, err := websocket.DefaultDialer.Dial(addr, nil)
 		if err != nil {
@@ -17,13 +18,13 @@ func connectTimerServ(hub *cascade.Hub, addr string) {
 			continue
 		}
 
-		server := cascade.NewServer(hub, c, "timerserv")
+		server := cascade.NewPeer(hub, c)
 
 		server.CallbackOnRead = func(message []byte) {
 			server.Hub.MessageChannel <- &cascade.HubMessage{Peer: server, Message: message}
 		}
 
-		hub.ServerRegister <- server
+		hub.PeerRegister <- server
 
 		go server.WritePump()
 		server.ReadPump(1024)

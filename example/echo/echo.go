@@ -47,12 +47,12 @@ func serveWs(hub *cascade.Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := cascade.NewClient(hub, conn)
+	client := cascade.NewPeer(hub, conn)
 	client.CallbackOnRead = func(message []byte) {
 		log.Printf("[Info] (%v) recv message and echo: %v\n", client.Conn.RemoteAddr().String(), string(message))
 		client.SendChannel <- message
 	}
-	client.Hub.ClientRegister <- client
+	client.Hub.PeerRegister <- client
 
 	go client.WritePump()
 	go client.ReadPump(1024)

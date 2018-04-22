@@ -7,29 +7,14 @@ import (
 )
 
 type Peer struct {
-	Name           string          // client's name
-	Type           string          // client or server
 	Hub            *Hub            // peer's hub
 	Conn           *websocket.Conn // websocket connection
 	SendChannel    chan []byte     // send channel
 	CallbackOnRead func([]byte)    // on read message form peer
 }
 
-func NewClient(hub *Hub, conn *websocket.Conn) *Peer {
+func NewPeer(hub *Hub, conn *websocket.Conn) *Peer {
 	return &Peer{
-		Name:           "",
-		Type:           "client",
-		Hub:            hub,
-		Conn:           conn,
-		SendChannel:    make(chan []byte, 100),
-		CallbackOnRead: nil,
-	}
-}
-
-func NewServer(hub *Hub, conn *websocket.Conn, name string) *Peer {
-	return &Peer{
-		Name:           name,
-		Type:           "server",
 		Hub:            hub,
 		Conn:           conn,
 		SendChannel:    make(chan []byte, 100),
@@ -40,11 +25,7 @@ func NewServer(hub *Hub, conn *websocket.Conn, name string) *Peer {
 // peer read
 func (this *Peer) ReadPump(maxReadSize int64) {
 	defer func() {
-		if this.Type == "server" {
-			this.Hub.ServerUnregister <- this
-		} else {
-			this.Hub.ClientUnregister <- this
-		}
+		this.Hub.PeerUnregister <- this
 		this.Conn.Close()
 	}()
 

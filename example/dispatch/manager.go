@@ -32,10 +32,16 @@ func NewManager(hub *cascade.Hub) *Manager {
 
 // override hub function
 func (this *Manager) OnMessage(message *cascade.HubMessage) {
+
+	user := ""
+	if clientInfos, ok := this.ClientInfos[message.Peer]; ok {
+		user = clientInfos.User
+	}
+
 	op, data_bytes, err := common.ParseStreamData(message.Message)
 	if err != nil {
 		log.Printf("[Warning] (%v)<%v> failed parse stream data: %v\n",
-			message.Peer.Conn.RemoteAddr().String(), message.Peer.Name, string(message.Message))
+			message.Peer.Conn.RemoteAddr().String(), user, string(message.Message))
 		return
 	}
 
@@ -45,11 +51,12 @@ func (this *Manager) OnMessage(message *cascade.HubMessage) {
 		}
 	} else {
 		log.Printf("[Warning] (%v)<%v> recv message without handle callback: %v\n",
-			message.Peer.Conn.RemoteAddr().String(), message.Peer.Name, op)
+			message.Peer.Conn.RemoteAddr().String(), user, op)
 	}
 }
 
 func (this *Manager) OnClientActive(client *cascade.Peer) {
+	log.Printf("[Info] client active: %v\n", client.Conn.RemoteAddr())
 	this.ClientInfos[client] = ClientInfo{
 		User:    "",
 		Logined: false,
@@ -57,6 +64,7 @@ func (this *Manager) OnClientActive(client *cascade.Peer) {
 }
 
 func (this *Manager) OnClientInactive(client *cascade.Peer) {
+	log.Printf("[Info] client inactive: %v\n", client.Conn.RemoteAddr())
 	if _, ok := this.ClientInfos[client]; ok {
 		delete(this.ClientInfos, client)
 	}
@@ -71,5 +79,9 @@ func (this *Manager) RegisterCallbacks() {
 func (this *Manager) OnMessageLogin(client *cascade.Peer, message []byte) error {
 	log.Printf("[Info] (%v) req login\n", client.Conn.RemoteAddr().String())
 	// check password and add into ClientInfos...
+	this.ClientInfos[client] = ClientInfo{
+		User:    "xxx",
+		Logined: true,
+	}
 	return nil
 }

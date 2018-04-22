@@ -33,8 +33,8 @@ func main() {
 		log.Println("on message")
 		manager.OnMessage(message)
 	}
-	hub.CallbackOnClientActive = func(client *cascade.Peer) { manager.OnClientActive(client) }
-	hub.CallbackOnClientInactive = func(client *cascade.Peer) { manager.OnClientInactive(client) }
+	hub.CallbackOnActive = func(client *cascade.Peer) { manager.OnClientActive(client) }
+	hub.CallbackOnInactive = func(client *cascade.Peer) { manager.OnClientInactive(client) }
 	go hub.Run()
 
 	mux := http.NewServeMux()
@@ -59,9 +59,9 @@ func serveWs(hub *cascade.Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := cascade.NewClient(hub, conn)
+	client := cascade.NewPeer(hub, conn)
 	client.CallbackOnRead = func(message []byte) { hub.MessageChannel <- &cascade.HubMessage{Peer: client, Message: message} }
-	client.Hub.ClientRegister <- client
+	client.Hub.PeerRegister <- client
 
 	go client.WritePump()
 	go client.ReadPump(1024)

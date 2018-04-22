@@ -49,8 +49,8 @@ func serveWs(hub *cascade.Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := cascade.NewClient(hub, conn)
-	client.Hub.ClientRegister <- client
+	client := cascade.NewPeer(hub, conn)
+	client.Hub.PeerRegister <- client
 
 	go client.WritePump()
 	go client.ReadPump(1024)
@@ -58,7 +58,7 @@ func serveWs(hub *cascade.Hub, w http.ResponseWriter, r *http.Request) {
 
 func setHubCallback(hub *cascade.Hub) {
 	hub.CallbackOnMsg = func(message *cascade.HubMessage) {
-		for client := range hub.Clients {
+		for client := range hub.Peers {
 			select {
 			case client.SendChannel <- message.Message:
 			default:
