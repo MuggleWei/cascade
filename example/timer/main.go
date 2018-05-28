@@ -1,18 +1,11 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/MuggleWei/cascade"
-	"github.com/gorilla/websocket"
 )
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024 * 20,
-	WriteBufferSize: 1024 * 20,
-}
 
 func init() {
 	log.SetOutput(os.Stdout)
@@ -20,52 +13,24 @@ func init() {
 }
 
 func main() {
-	hub := cascade.NewHub()
-	setHubCallback(hub)
-	go hub.Run()
+	listenAddr := flag.String("addr", "127.0.0.1:10000", "listen address")
+	flag.Parse()
 
-	runTicker(hub)
+	service := NewTimerService()
+
+	runTicker(service.Hub)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/timer", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
+	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		service.Hub.OnAccept(w, r)
 	})
 
 	server := &http.Server{
-		Addr:    "127.0.0.1:10000",
+		Addr:    *listenAddr,
 		Handler: mux,
 	}
-	// err := server.ListenAndServeTLS("ca/server.crt", "ca/server.key")
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatal("[Fatal] ListenAndServe: %v\n", err)
-	}
-}
-
-func serveWs(hub *cascade.Hub, w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("[Error] %v\n", err)
-		return
-	}
-
-	client := cascade.NewPeer(hub, conn)
-	client.Hub.PeerRegister <- client
-
-	go client.WritePump()
-	go client.ReadPump(1024)
-}
-
-func setHubCallback(hub *cascade.Hub) {
-	hub.CallbackOnMsg = func(message *cascade.HubMessage) {
-		for client := range hub.Peers {
-			select {
-			case client.SendChannel <- message.Message:
-			default:
-				log.Printf("[Warning] SendChannel full\n")
-				// close(client.SendChannel)
-				// delete(hub.Clients, client)
-			}
-		}
 	}
 }

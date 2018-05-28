@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/MuggleWei/cascade/example/common"
+	"github.com/MuggleWei/cascade/example"
 	"github.com/gorilla/websocket"
 )
 
@@ -19,12 +19,7 @@ func main() {
 			continue
 		}
 
-		loginReq := common.StreamData{Op: "login", Data: nil}
-		//		bytes, err := json.Marshal(loginReq)
-		//		if err != nil {
-		//			log.Println(err)
-		//		}
-		//
+		loginReq := example.CommonMessage{Op: "login", Data: example.LoginMessage{User: "muggle", Password: "xxx"}}
 		err = c.WriteJSON(loginReq)
 		if err != nil {
 			log.Println(err)

@@ -23,7 +23,7 @@ func runTicker(hub *cascade.Hub) {
 				log.Printf("[Warning] failed marshal timestamp: %+v\n", timestamp)
 				continue
 			}
-			hub.MessageChannel <- &cascade.HubMessage{Peer: nil, Message: bytes}
+			hub.ByteMessageChannel <- &cascade.HubByteMessage{Peer: nil, Message: bytes}
 		}
 	}()
 }

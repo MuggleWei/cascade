@@ -31,7 +31,9 @@ func (this *Peer) ReadPump(maxReadSize int64) {
 		this.Conn.Close()
 	}()
 
-	this.Conn.SetReadLimit(maxReadSize)
+	if maxReadSize > 0 {
+		this.Conn.SetReadLimit(maxReadSize)
+	}
 	for {
 		_, message, err := this.Conn.ReadMessage()
 		if err != nil {
