@@ -21,7 +21,7 @@ func main() {
 
 	timerService := NewTimerService()
 	timerService.GateHub = gate.Hub
-	go timerService.Hub.ConnectAndRun("ws://127.0.0.1:10000/ws", true, 3)
+	go timerService.Hub.ConnectAndRun("ws://127.0.0.1:10000/ws", true, 3, nil)
 
 	server := &http.Server{
 		Addr:    "0.0.0.0:10102",
