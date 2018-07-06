@@ -124,6 +124,7 @@ func (this *Hub) OnAccept(w http.ResponseWriter, r *http.Request) {
 	peer.CallbackOnRead = func(message []byte) {
 		this.Slot.OnRead(peer, message)
 	}
+	peer.Header = r.Header
 	peer.Hub.PeerRegister <- peer
 
 	go peer.WritePump()

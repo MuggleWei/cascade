@@ -2,6 +2,7 @@ package cascade
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/gorilla/websocket"
 )
@@ -12,6 +13,7 @@ type Peer struct {
 	SendChannel    chan []byte     // send channel
 	CallbackOnRead func([]byte)    // on read message form peer
 	ExtraInfo      interface{}     // extra information
+	Header         http.Header     // header
 }
 
 func NewPeer(hub *Hub, conn *websocket.Conn) *Peer {
@@ -21,6 +23,7 @@ func NewPeer(hub *Hub, conn *websocket.Conn) *Peer {
 		SendChannel:    make(chan []byte, 100),
 		CallbackOnRead: nil,
 		ExtraInfo:      nil,
+		Header:         nil,
 	}
 }
 
