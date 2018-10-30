@@ -1,6 +1,9 @@
 package cascade
 
 import (
+	"bytes"
+	"compress/flate"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -38,7 +41,7 @@ func (this *Peer) ReadPump(maxReadSize int64) {
 		this.Conn.SetReadLimit(maxReadSize)
 	}
 	for {
-		_, message, err := this.Conn.ReadMessage()
+		messageType, message, err := this.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
@@ -47,7 +50,19 @@ func (this *Peer) ReadPump(maxReadSize int64) {
 		}
 
 		if this.CallbackOnRead != nil {
-			this.CallbackOnRead(message)
+			switch messageType {
+			case websocket.TextMessage:
+				// no need uncompressed
+				this.CallbackOnRead(message)
+			case websocket.BinaryMessage:
+				// uncompressed
+				text, err := GzipDecode(message)
+				if err != nil {
+					log.Printf("error: %v", err)
+				} else {
+					this.CallbackOnRead(text)
+				}
+			}
 		}
 	}
 }
@@ -77,4 +92,13 @@ func (this *Peer) WritePump() {
 			}
 		}
 	}
+}
+
+//
+func GzipDecode(in []byte) ([]byte, error) {
+	reader := flate.NewReader(bytes.NewReader(in))
+	defer reader.Close()
+
+	return ioutil.ReadAll(reader)
+
 }
