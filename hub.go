@@ -87,7 +87,7 @@ func (this *Hub) ConnectAndRun(addr string, reconn bool, reconnInterval int, req
 	for {
 		conn, _, err := websocket.DefaultDialer.Dial(addr, reqHeader)
 		if err != nil {
-			log.Printf("[Error] failed dial to %v: %v", addr, err.Error())
+			// log.Printf("[Error] failed dial to %v: %v", addr, err.Error())
 			if !reconn {
 				break
 			}
