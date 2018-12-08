@@ -80,7 +80,9 @@ func (this *Hub) Run() {
 	}
 }
 
-func (this *Hub) ConnectAndRun(addr string, reconn bool, reconnInterval int, reqHeader http.Header) {
+type DisconnectCallback func(string, error)
+
+func (this *Hub) ConnectAndRun(addr string, reconn bool, reconnInterval int, reqHeader http.Header, disconnectCallback DisconnectCallback) {
 	go this.Run()
 	defer this.Stop()
 
@@ -88,6 +90,9 @@ func (this *Hub) ConnectAndRun(addr string, reconn bool, reconnInterval int, req
 		conn, _, err := websocket.DefaultDialer.Dial(addr, reqHeader)
 		if err != nil {
 			// log.Printf("[Error] failed dial to %v: %v", addr, err.Error())
+			if disconnectCallback != nil {
+				disconnectCallback(addr, err)
+			}
 			if !reconn {
 				break
 			}

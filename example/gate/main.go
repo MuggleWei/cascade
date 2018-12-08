@@ -21,7 +21,10 @@ func main() {
 
 	timerService := NewTimerService()
 	timerService.GateHub = gate.Hub
-	go timerService.Hub.ConnectAndRun("ws://127.0.0.1:10000/ws", true, 3, nil)
+	go timerService.Hub.ConnectAndRun("ws://127.0.0.1:10000/ws", true, 3, nil,
+		func(addr string, err error) {
+			log.Printf("[Error] failed dial to %v: %v", addr, err.Error())
+		})
 
 	server := &http.Server{
 		Addr:    "0.0.0.0:10102",
