@@ -61,6 +61,10 @@ func NewHub(slot Slot, upgrader *websocket.Upgrader, maxReadSize int64) *Hub {
 func (this *Hub) Run() {
 	for {
 		select {
+		case objMsg := <-this.ObjectMessageChannel:
+			this.Slot.OnHubObjectMessage(objMsg)
+		case byteMsg := <-this.ByteMessageChannel:
+			this.Slot.OnHubByteMessage(byteMsg)
 		case peer := <-this.PeerRegister:
 			this.Peers[peer] = true
 			this.Slot.OnActive(peer)
@@ -70,10 +74,6 @@ func (this *Hub) Run() {
 				delete(this.Peers, peer)
 				close(peer.SendChannel)
 			}
-		case byteMsg := <-this.ByteMessageChannel:
-			this.Slot.OnHubByteMessage(byteMsg)
-		case objMsg := <-this.ObjectMessageChannel:
-			this.Slot.OnHubObjectMessage(objMsg)
 		case _ = <-this.ExitChannel:
 			break
 		}
