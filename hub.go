@@ -111,6 +111,10 @@ func (this *Hub) ConnectAndRun(addr string, reconn bool, reconnInterval int, req
 
 		go peer.WritePump()
 		peer.ReadPump(this.MaxReadSize)
+
+		if !reconn {
+			break
+		}
 	}
 }
 
