@@ -122,13 +122,18 @@ func (this *Hub) Stop() {
 	this.ExitChannel <- 0
 }
 
-func (this *Hub) Close() {
-	close(this.PeerRegister)
-	close(this.PeerUnregister)
-	close(this.ByteMessageChannel)
-	close(this.ObjectMessageChannel)
-	close(this.ExitChannel)
-}
+// It's OK to leave a Go channel open forever and never close it. When the channel
+// is no longer used, it will be garbage collected
+// see:
+//     https://stackoverflow.com/questions/8593645/is-it-ok-to-leave-a-channel-open
+//     https://groups.google.com/forum/#!msg/golang-nuts/pZwdYRGxCIk/qpbHxRRPJdUJ
+// func (this *Hub) Close() {
+// 	close(this.PeerRegister)
+// 	close(this.PeerUnregister)
+// 	close(this.ByteMessageChannel)
+// 	close(this.ObjectMessageChannel)
+// 	close(this.ExitChannel)
+// }
 
 func (this *Hub) OnAccept(w http.ResponseWriter, r *http.Request) {
 	conn, err := this.Upgrader.Upgrade(w, r, nil)
