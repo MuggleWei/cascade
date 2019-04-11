@@ -118,6 +118,14 @@ func (this *Hub) Stop() {
 	this.ExitChannel <- 0
 }
 
+func (this *Hub) Close() {
+	close(this.PeerRegister)
+	close(this.PeerUnregister)
+	close(this.ByteMessageChannel)
+	close(this.ObjectMessageChannel)
+	close(this.ExitChannel)
+}
+
 func (this *Hub) OnAccept(w http.ResponseWriter, r *http.Request) {
 	conn, err := this.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
